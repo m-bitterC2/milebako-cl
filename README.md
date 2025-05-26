@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Milebako - Frontend
 
-## Getting Started
+**Milebako**は、シンプルなタスク管理アプリです。
 
-First, run the development server:
+このリポジトリでは、フロントエンドのソースコードを管理します。
+
+---
+
+### 技術スタック
+
+- **Next.js 15** (App Router)
+- **TypeScript**
+- **Tailwind CSS**
+- **shadcn/ui** - UI コンポーネント
+- **@dnd-kit** - ドラッグ&ドロップ機能
+- **next-themes** - ダークモード対応
+- **Lucide React** - アイコンライブラリ
+
+---
+
+## セットアップ手順
+
+### 1. リポジトリをクローン
+
+```bash
+git clone https://github.com/m-bitterC2/milebako-cl.git
+cd milebako-cl
+```
+
+### 2. 依存パッケージをインストール
+
+```bash
+# UI関連
+npm install @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-slot
+npm install class-variance-authority clsx tailwind-merge
+npm install lucide-react
+
+# ドラッグ&ドロップ
+npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+
+# テーマ管理
+npm install next-themes
+```
+
+### 3. サーバー起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 開発のポイント
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### コンポーネント設計
 
-## Learn More
+- UI・ロジック・状態管理の明確な分離
 
-To learn more about Next.js, take a look at the following resources:
+### UX/UI
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **レスポンシブデザイン**: モバイル・デスクトップ対応
+- **ダークモード**: システム設定に応じた自動切り替え
+- **ドラッグ&ドロップ**: PC（マウス）・モバイル（タッチ）両対応
+- **モバイル配慮**: カラム移動のためのセレクトボックス
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### パフォーマンス
 
-## Deploy on Vercel
+- **楽観的更新**: UI 即座更新 → API 呼び出し → エラー時ロールバック
+- **コード分割**: コンポーネント単位でのファイル分割
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 今後の予定（ToDo）
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- ユーザー認証機能
