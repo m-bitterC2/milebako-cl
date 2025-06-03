@@ -20,6 +20,7 @@ class ApiClient {
   // 共通のfetch関数
   private async request<T>(
     endpoint: string,
+    authHeader: string,
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
@@ -29,7 +30,7 @@ class ApiClient {
         ...options,
         headers: {
           "Content-Type": "application/json",
-          ...options.headers,
+          Authorization: authHeader ?? "",
         },
       });
 
@@ -59,29 +60,43 @@ class ApiClient {
   }
 
   // GET リクエスト
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "GET" });
+  async get<T>(endpoint: string, authHeader?: string, data?: any): Promise<T> {
+    return this.request<T>(endpoint, authHeader ?? "", {
+      method: "GET",
+      body: data ? JSON.stringify(data) : undefined,
+    });
   }
 
   // POST リクエスト
-  async post<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
+  async post<T>(endpoint: string, authHeader?: string, data?: any): Promise<T> {
+    return this.request<T>(endpoint, authHeader ?? "", {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
   // PATCH リクエスト
-  async patch<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
+  async patch<T>(
+    endpoint: string,
+    authHeader?: string,
+    data?: any
+  ): Promise<T> {
+    return this.request<T>(endpoint, authHeader ?? "", {
       method: "PATCH",
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
   // DELETE リクエスト
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "DELETE" });
+  async delete<T>(
+    endpoint: string,
+    authHeader?: string,
+    data?: any
+  ): Promise<T> {
+    return this.request<T>(endpoint, authHeader ?? "", {
+      method: "DELETE",
+      body: data ? JSON.stringify(data) : undefined,
+    });
   }
 }
 

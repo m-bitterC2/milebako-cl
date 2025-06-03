@@ -26,17 +26,21 @@ import { TaskCard } from "./task-card";
 import { TaskForm } from "./task-form";
 import { Column } from "./column";
 import { useTasks } from "@/hooks/use-tasks";
+import { useAuth } from "@/hooks/use-auth";
+import { LogOut, User } from "lucide-react";
+import { Button } from "../ui/button";
 
 // ===== メインのタスクボードコンポーネント =====
 export default function TaskBoard() {
+  // ===== 認証フック =====
+  const { user, logout } = useAuth();
+
   // ===== カスタムフック使用 =====
   const {
     tasks,
     isLoading,
     error,
-    isServerConnected,
     setError,
-    fetchTasks,
     addTask,
     updateTask,
     deleteTask,
@@ -216,26 +220,27 @@ export default function TaskBoard() {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
               Milebako
             </h1>
-            {/* サーバー接続状態表示 */}
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-3 h-3 rounded-full ${
-                  isServerConnected ? "bg-green-500" : "bg-red-500"
-                }`}
-              />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {isServerConnected ? "サーバー接続中" : "オフライン"}
-              </span>
-            </div>
+            {/* ユーザー情報表示 */}
+            {user && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">
+                <User className="h-4 w-4" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {user.username}
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={fetchTasks}
-              className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
-            >
-              更新
-            </button>
             <ThemeToggle />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => logout()}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <div className="hidden sm:block">ログアウト</div>
+            </Button>
           </div>
         </div>
 

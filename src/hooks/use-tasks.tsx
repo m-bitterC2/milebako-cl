@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { Task } from "@/components/task-board/types";
 import { ApiError } from "@/lib/api";
+import { useAuth } from "./use-auth";
 
 // ===== データ変換関数 =====
 /** サーバーのデータ形式をクライアント形式に変換 */
@@ -25,18 +26,22 @@ const convertTaskToApiTask = (task: Omit<Task, "id">, position = 0) => ({
 
 // ===== カスタムフック =====
 export function useTasks() {
+  const { token, user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isServerConnected, setIsServerConnected] = useState(false);
 
   /** API呼び出し関数 */
   const apiCall = async (url: string, options: RequestInit = {}) => {
+    if (!token) {
+      throw new Error("認証が必要です");
+    }
+
     const response = await fetch(url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        ...options.headers,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -58,6 +63,12 @@ export function useTasks() {
 
   /** 初期データ取得 */
   const fetchTasks = async () => {
+    if (!token || !user) {
+      setTasks([]);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -66,7 +77,6 @@ export function useTasks() {
       const convertedTasks = apiTasks.map(convertApiTaskToTask);
 
       setTasks(convertedTasks);
-      setIsServerConnected(true);
     } catch (err) {
       console.error("タスク取得エラー:", err);
       const errorMessage =
@@ -74,7 +84,6 @@ export function useTasks() {
 
       setError(errorMessage);
       setTasks([]);
-      setIsServerConnected(false);
     } finally {
       setIsLoading(false);
     }
@@ -85,8 +94,8 @@ export function useTasks() {
     columnId: string,
     taskData: Omit<Task, "id" | "columnId">
   ) => {
-    if (!isServerConnected) {
-      setError("サーバーに接続できません");
+    if (!token) {
+      setError("認証が必要です");
       return;
     }
 
@@ -113,8 +122,8 @@ export function useTasks() {
 
   /** タスクの更新 */
   const updateTask = async (updatedTask: Task) => {
-    if (!isServerConnected) {
-      setError("サーバーに接続できません");
+    if (!token) {
+      setError("認証が必要です");
       return;
     }
 
@@ -138,8 +147,8 @@ export function useTasks() {
 
   /** タスクの削除 */
   const deleteTask = async (taskId: string) => {
-    if (!isServerConnected) {
-      setError("サーバーに接続できません");
+    if (!token) {
+      setError("認証が必要です");
       return;
     }
 
@@ -159,8 +168,8 @@ export function useTasks() {
 
   /** タスクの移動 */
   const moveTask = async (taskId: string, newColumnId: string) => {
-    if (!isServerConnected) {
-      setError("サーバーに接続できません");
+    if (!token) {
+      setError("認証が必要です");
       return;
     }
 
@@ -185,8 +194,8 @@ export function useTasks() {
 
   /** タスクの並び替え */
   const reorderTasks = async (reorderedTasks: Task[]) => {
-    if (!isServerConnected) {
-      setError("サーバーに接続できません");
+    if (!token) {
+      setError("認証が必要です");
       return;
     }
 
@@ -215,16 +224,13 @@ export function useTasks() {
   // ===== 初期化 =====
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [token, user]);
 
   return {
     tasks,
     isLoading,
     error,
-    isServerConnected,
-    setTasks,
     setError,
-    fetchTasks,
     addTask,
     updateTask,
     deleteTask,
