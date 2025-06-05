@@ -49,39 +49,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isServerConnected, setIsServerConnected] = useState(true);
   const router = useRouter();
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   // ===== API呼び出し関数 =====
-  const apiCall = async (url: string, options: RequestInit = {}) => {
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-          ...options.headers,
-        },
-      });
+  const apiCall = useCallback(
+    async (url: string, options: RequestInit = {}) => {
+      try {
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+            ...options.headers,
+          },
+        });
 
-      // サーバーが応答した場合は接続状態を更新
-      setIsServerConnected(true);
+        // サーバーが応答した場合は接続状態を更新
+        setIsServerConnected(true);
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(
+            data.error || `HTTP error! status: ${response.status}`
+          );
+        }
+
+        return data;
+      } catch (err) {
+        // ネットワークエラーまたはサーバー無応答の場合
+        if (err instanceof TypeError && err.message.includes("fetch")) {
+          setIsServerConnected(false);
+          throw new Error(
+            "サーバーに接続できません。サーバーが起動していない可能性があります。"
+          );
+        }
+        throw err;
       }
-
-      return data;
-    } catch (err) {
-      // ネットワークエラーまたはサーバー無応答の場合
-      if (err instanceof TypeError && err.message.includes("fetch")) {
-        setIsServerConnected(false);
-        throw new Error(
-          "サーバーに接続できません。サーバーが起動していない可能性があります。"
-        );
-      }
-      throw err;
-    }
-  };
+    },
+    [token]
+  );
 
   // ===== 認証情報をローカルストレージに保存 =====
   const saveAuthToCookies = useCallback((user: User, token: string) => {
@@ -119,7 +128,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsLoading(false);
       }
     },
-    [saveAuthToCookies]
+    [clearError, apiCall, saveAuthToCookies]
   );
 
   const register = useCallback(
@@ -145,7 +154,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsLoading(false);
       }
     },
-    [saveAuthToCookies]
+    [clearError, apiCall, saveAuthToCookies]
   );
 
   const logout = useCallback(() => {
@@ -154,10 +163,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
     clearAuthFromCookies();
   }, [clearAuthFromCookies]);
-
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
 
   // ===== 初期化（クライアントサイドでのフォールバック） =====
   useEffect(() => {
@@ -178,7 +183,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         router.push("/auth");
       }
     }
-  }, [user, token, clearAuthFromCookies]);
+  }, [user, token, clearAuthFromCookies, router]);
 
   const contextValue: AuthContextType = useMemo(
     () => ({

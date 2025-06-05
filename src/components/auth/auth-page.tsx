@@ -13,7 +13,7 @@ export function AuthPage() {
 
   const handleLogin = async (username: string, password: string) => {
     const result = await login(username, password);
-    result && router.push("/");
+    if (result) router.push("/");
   };
 
   const handleRegister = async (
@@ -22,7 +22,7 @@ export function AuthPage() {
     password: string
   ) => {
     const result = await register(username, email, password);
-    result && router.push("/");
+    if (result) router.push("/");
   };
 
   return (

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Task } from "@/components/task-board/types";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "./use-auth";
 
 // ===== データ変換関数 =====
 /** サーバーのデータ形式をクライアント形式に変換 */
-const convertApiTaskToTask = (apiTask: any): Task => ({
+const convertApiTaskToTask = (apiTask: Task): Task => ({
   id: apiTask.id,
   title: apiTask.title,
   description: apiTask.description || "",
@@ -32,37 +32,40 @@ export function useTasks() {
   const [error, setError] = useState<string | null>(null);
 
   /** API呼び出し関数 */
-  const apiCall = async (url: string, options: RequestInit = {}) => {
-    if (!token) {
-      throw new Error("認証が必要です");
-    }
+  const apiCall = useCallback(
+    async (url: string, options: RequestInit = {}) => {
+      if (!token) {
+        throw new Error("認証が必要です");
+      }
 
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new ApiError(
-        errorData.error || `HTTP error! status: ${response.status}`,
-        response.status,
-        errorData.details
-      );
-    }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new ApiError(
+          errorData.error || `HTTP error! status: ${response.status}`,
+          response.status,
+          errorData.details
+        );
+      }
 
-    if (response.status === 204) {
-      return null;
-    }
+      if (response.status === 204) {
+        return null;
+      }
 
-    return await response.json();
-  };
+      return await response.json();
+    },
+    [token]
+  );
 
   /** 初期データ取得 */
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     if (!token || !user) {
       setTasks([]);
       setIsLoading(false);
@@ -87,7 +90,7 @@ export function useTasks() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [apiCall, token, user]);
 
   /** タスクの追加 */
   const addTask = async (
@@ -106,7 +109,7 @@ export function useTasks() {
         columnTasks.length
       );
 
-      const createdApiTask = await apiCall("/api/todos/create", {
+      const createdApiTask: Task = await apiCall("/api/todos/create", {
         method: "POST",
         body: JSON.stringify(apiTaskData),
       });
@@ -224,7 +227,7 @@ export function useTasks() {
   // ===== 初期化 =====
   useEffect(() => {
     fetchTasks();
-  }, [token, user]);
+  }, [token, user, fetchTasks]);
 
   return {
     tasks,

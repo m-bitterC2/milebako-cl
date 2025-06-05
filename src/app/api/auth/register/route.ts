@@ -6,7 +6,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const response = await apiClient.post("/auth/register", "", body);
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (e) {
+    console.error(e);
     return NextResponse.json({ error: "登録に失敗しました" }, { status: 500 });
   }
 }

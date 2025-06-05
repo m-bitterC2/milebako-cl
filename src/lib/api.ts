@@ -3,7 +3,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 // ===== カスタムエラークラス =====
 export class ApiError extends Error {
-  constructor(message: string, public status: number, public details?: any) {
+  constructor(
+    message: string,
+    public status: number,
+    public details?: unknown
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -60,7 +64,11 @@ class ApiClient {
   }
 
   // GET リクエスト
-  async get<T>(endpoint: string, authHeader?: string, data?: any): Promise<T> {
+  async get<T>(
+    endpoint: string,
+    authHeader?: string,
+    data?: object
+  ): Promise<T> {
     return this.request<T>(endpoint, authHeader ?? "", {
       method: "GET",
       body: data ? JSON.stringify(data) : undefined,
@@ -68,7 +76,11 @@ class ApiClient {
   }
 
   // POST リクエスト
-  async post<T>(endpoint: string, authHeader?: string, data?: any): Promise<T> {
+  async post<T>(
+    endpoint: string,
+    authHeader?: string,
+    data?: object
+  ): Promise<T> {
     return this.request<T>(endpoint, authHeader ?? "", {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
@@ -79,7 +91,7 @@ class ApiClient {
   async patch<T>(
     endpoint: string,
     authHeader?: string,
-    data?: any
+    data?: object
   ): Promise<T> {
     return this.request<T>(endpoint, authHeader ?? "", {
       method: "PATCH",
@@ -91,7 +103,7 @@ class ApiClient {
   async delete<T>(
     endpoint: string,
     authHeader?: string,
-    data?: any
+    data?: object
   ): Promise<T> {
     return this.request<T>(endpoint, authHeader ?? "", {
       method: "DELETE",
